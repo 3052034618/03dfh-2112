@@ -1,0 +1,349 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: $spacing-xl $page-padding;
+  padding-bottom: 80rpx;
+  color: $color-text-white;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  opacity: 0.8;
+}
+
+.progressCard {
+  margin: -48rpx $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.progressTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressNumber {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.progressBar {
+  height: 16rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  transition: width $transition-base;
+}
+
+.card {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.cardTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.cardIcon {
+  font-size: 28rpx;
+}
+
+.distributionItem {
+  margin-bottom: $spacing-lg;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.distributionLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  justify-content: space-between;
+}
+
+.distributionBar {
+  height: 40rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  display: flex;
+}
+
+.distributionSegment {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  color: white;
+  font-weight: $font-weight-medium;
+  transition: width $transition-base;
+}
+
+.segmentYes {
+  background: linear-gradient(90deg, $color-success 0%, #34d399 100%);
+}
+
+.segmentMaybe {
+  background: linear-gradient(90deg, $color-warning 0%, $color-accent-light 100%);
+}
+
+.segmentNo {
+  background: linear-gradient(90deg, $color-error 0%, #f87171 100%);
+}
+
+.legendRow {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-lg;
+  margin-top: $spacing-sm;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.legendDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+}
+
+.dotYes { background: $color-success; }
+.dotMaybe { background: $color-warning; }
+.dotNo { background: $color-error; }
+
+.candidateSection {
+  margin-bottom: $spacing-lg;
+}
+
+.candidateTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.candidateRoles {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.candidateRoleItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.primary {
+    background: $color-primary-bg;
+    border-color: $color-primary;
+  }
+}
+
+.roleRank {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: $color-text-tertiary;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  margin-right: $spacing-md;
+
+  &.rank1 {
+    background: linear-gradient(135deg, $color-accent 0%, $color-accent-light 100%);
+  }
+
+  &.rank2 {
+    background: $color-primary;
+  }
+
+  &.rank3 {
+    background: $color-text-tertiary;
+  }
+}
+
+.roleInfo {
+  flex: 1;
+}
+
+.roleName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.roleDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.roleBadges {
+  display: flex;
+  gap: 8rpx;
+  margin-top: 8rpx;
+}
+
+.miniBadge {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+}
+
+.badgeHighlight {
+  background: rgba(245, 158, 11, 0.15);
+  color: $color-accent;
+}
+
+.badgeKiller {
+  background: rgba(239, 68, 68, 0.15);
+  color: $color-error;
+}
+
+.badgeIntimate {
+  background: rgba(236, 72, 153, 0.15);
+  color: $color-female;
+}
+
+.matchScore {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.conflictWarning {
+  margin: 0 $page-padding $spacing-lg;
+  padding: $spacing-lg;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: $radius-lg;
+  border: 2rpx solid rgba(239, 68, 68, 0.3);
+}
+
+.warningTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-error;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.warningContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.primaryBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.secondaryBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  background: $color-primary-bg;
+  color: $color-primary;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.anonymousNote {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: rgba(124, 58, 237, 0.08);
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}

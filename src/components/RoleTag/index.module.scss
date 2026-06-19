@@ -1,0 +1,66 @@
+@use '@/styles/variables.scss' as *;
+
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  gap: 8rpx;
+  white-space: nowrap;
+}
+
+.male {
+  background: rgba(59, 130, 246, 0.1);
+  color: $color-male;
+}
+
+.female {
+  background: rgba(236, 72, 153, 0.1);
+  color: $color-female;
+}
+
+.neutral {
+  background: rgba(139, 92, 246, 0.1);
+  color: $color-neutral;
+}
+
+.genderIcon {
+  font-size: $font-size-md;
+}
+
+.highlightBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 10rpx;
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-light 100%);
+  color: white;
+  border-radius: $radius-xs;
+  font-size: 20rpx;
+  font-weight: $font-weight-medium;
+  margin-left: 8rpx;
+}
+
+.killerBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 10rpx;
+  background: rgba(239, 68, 68, 0.15);
+  color: $color-error;
+  border-radius: $radius-xs;
+  font-size: 20rpx;
+  font-weight: $font-weight-medium;
+  margin-left: 8rpx;
+}
+
+.intimateBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 10rpx;
+  background: rgba(236, 72, 153, 0.15);
+  color: $color-female;
+  border-radius: $radius-xs;
+  font-size: 20rpx;
+  font-weight: $font-weight-medium;
+  margin-left: 8rpx;
+}

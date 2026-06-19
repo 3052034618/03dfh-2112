@@ -1,0 +1,139 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+  @include text-ellipsis;
+}
+
+.statusTag {
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-left: $spacing-sm;
+  white-space: nowrap;
+}
+
+.scriptInfo {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  gap: $spacing-sm;
+}
+
+.typeTag {
+  padding: 4rpx 12rpx;
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+}
+
+.scriptName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .label {
+    margin-right: $spacing-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+.genderInfo {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.maleIcon {
+  color: $color-male;
+  font-size: $font-size-md;
+}
+
+.femaleIcon {
+  color: $color-female;
+  font-size: $font-size-md;
+}
+
+.progressWrap {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1px solid $color-divider;
+}
+
+.progressBar {
+  height: 12rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  transition: width $transition-base;
+}
+
+.progressText {
+  display: flex;
+  justify-content: space-between;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.playerCount {
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.crossDressTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  background: rgba(124, 58, 237, 0.1);
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  margin-top: $spacing-sm;
+}

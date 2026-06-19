@@ -1,0 +1,323 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: $spacing-xl $page-padding;
+  padding-bottom: 100rpx;
+  color: $color-text-white;
+  text-align: center;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  opacity: 0.8;
+}
+
+.successIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.resultCard {
+  margin: -60rpx $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.myRoleSection {
+  text-align: center;
+  padding: $spacing-lg 0;
+  border-bottom: 1px solid $color-divider;
+  margin-bottom: $spacing-lg;
+}
+
+.myRoleLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.myRoleName {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.myRoleGender {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &.male {
+    background: rgba(59, 130, 246, 0.1);
+    color: $color-male;
+  }
+
+  &.female {
+    background: rgba(236, 72, 153, 0.1);
+    color: $color-female;
+  }
+
+  &.neutral {
+    background: rgba(139, 92, 246, 0.1);
+    color: $color-neutral;
+  }
+}
+
+.myRoleDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-md;
+  line-height: 1.6;
+}
+
+.roleTags {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.roleTag {
+  font-size: $font-size-xs;
+  padding: 6rpx 16rpx;
+  border-radius: $radius-xs;
+  font-weight: $font-weight-medium;
+}
+
+.tagHighlight {
+  background: linear-gradient(135deg, $color-accent 0%, $color-accent-light 100%);
+  color: white;
+}
+
+.tagKiller {
+  background: rgba(239, 68, 68, 0.15);
+  color: $color-error;
+}
+
+.tagIntimate {
+  background: rgba(236, 72, 153, 0.15);
+  color: $color-female;
+}
+
+.tagCrossDress {
+  background: rgba(124, 58, 237, 0.15);
+  color: $color-primary;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.sectionIcon {
+  font-size: 28rpx;
+}
+
+.allRolesList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.roleItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+}
+
+.roleAvatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: $color-primary-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  margin-right: $spacing-md;
+}
+
+.roleInfo {
+  flex: 1;
+}
+
+.roleItemName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.roleItemPlayer {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.roleItemGender {
+  font-size: $font-size-xs;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+
+  &.male {
+    background: rgba(59, 130, 246, 0.1);
+    color: $color-male;
+  }
+
+  &.female {
+    background: rgba(236, 72, 153, 0.1);
+    color: $color-female;
+  }
+
+  &.neutral {
+    background: rgba(139, 92, 246, 0.1);
+    color: $color-neutral;
+  }
+}
+
+.hostBadge {
+  font-size: 20rpx;
+  color: $color-accent;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+  margin-left: 8rpx;
+}
+
+.gameInfoCard {
+  margin: 0 $page-padding $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+  gap: $spacing-md;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoIcon {
+  font-size: 28rpx;
+  width: 40rpx;
+  text-align: center;
+}
+
+.infoContent {
+  flex: 1;
+}
+
+.infoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.infoValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.tipCard {
+  margin: 0 $page-padding $spacing-lg;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+  border-radius: $radius-lg;
+  border: 2rpx solid rgba(16, 185, 129, 0.3);
+}
+
+.tipTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-success;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.tipContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: $spacing-md;
+}
+
+.primaryBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.secondaryBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  background: $color-primary-bg;
+  color: $color-primary;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}

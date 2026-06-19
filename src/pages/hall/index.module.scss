@@ -48,16 +48,17 @@
 }
 
 .filterTabs {
-  display: flex;
-  gap: $spacing-sm;
+  @include scroll-x-container;
   padding: 0 $page-padding;
   margin-bottom: $spacing-lg;
   overflow-x: auto;
-  white-space: nowrap;
 }
 
 .filterTab {
+  @include scroll-x-item(auto);
+  display: inline-block;
   padding: $spacing-sm $spacing-lg;
+  margin-right: $spacing-sm;
   background: $color-bg-card;
   border-radius: $radius-round;
   font-size: $font-size-sm;
@@ -65,6 +66,7 @@
   white-space: nowrap;
   transition: all $transition-base;
   border: 2rpx solid transparent;
+  text-align: center;
 
   &.active {
     background: $color-primary;

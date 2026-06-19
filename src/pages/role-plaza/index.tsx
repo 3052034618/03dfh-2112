@@ -13,6 +13,8 @@ const RolePlazaPage: React.FC = () => {
 
   const getGameById = useGameStore((state) => state.getGameById);
   const currentUserId = useGameStore((state) => state.currentUserId);
+  const generateVoteData = useGameStore((state) => state.generateVoteData);
+  const confirmRolesByMatch = useGameStore((state) => state.confirmRolesByMatch);
 
   const game = getGameById(gameId);
   const player = game?.players.find((p) => p.id === currentUserId);
@@ -50,15 +52,17 @@ const RolePlazaPage: React.FC = () => {
       confirmText: '发起投票',
       success: (res) => {
         if (res.confirm) {
+          generateVoteData(game.id);
           Taro.showToast({
             title: '投票已发起',
             icon: 'success',
+            duration: 1000,
           });
           setTimeout(() => {
             Taro.redirectTo({
               url: `/pages/vote/index?gameId=${game.id}`,
             });
-          }, 1500);
+          }, 1000);
         }
       },
     });
@@ -66,10 +70,17 @@ const RolePlazaPage: React.FC = () => {
 
   const handleConfirmRoles = () => {
     if (!game) return;
+    confirmRolesByMatch(game.id);
     Taro.showToast({
-      title: '功能开发中',
-      icon: 'none',
+      title: '已生成分配',
+      icon: 'success',
+      duration: 1000,
     });
+    setTimeout(() => {
+      Taro.redirectTo({
+        url: `/pages/role-result/index?gameId=${game.id}`,
+      });
+    }, 1000);
   };
 
   if (!game || !distribution) {

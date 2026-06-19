@@ -32,7 +32,7 @@ const GameDetailPage: React.FC = () => {
   }, [game, currentUserId]);
 
   const handleJoin = () => {
-    if (!game || isJoined) return;
+    if (!game || isJoined || game.status !== 'recruiting') return;
 
     Taro.showActionSheet({
       itemList: ['男生报名', '女生报名'],
@@ -41,17 +41,19 @@ const GameDetailPage: React.FC = () => {
         const nicknames = ['剧本新人', '推理达人', '情感玩家', '硬核推土机', '戏精本精'];
         const randomNickname = nicknames[Math.floor(Math.random() * nicknames.length)];
 
-        joinGame(game.id, {
+        const result = joinGame(game.id, {
           nickname: randomNickname,
           gender,
           isHost: false,
         });
 
-        Taro.showToast({
-          title: '报名成功',
-          icon: 'success',
-          duration: 1500,
-        });
+        if (result) {
+          Taro.showToast({
+            title: '报名成功',
+            icon: 'success',
+            duration: 1500,
+          });
+        }
       },
     });
   };

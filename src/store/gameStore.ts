@@ -85,19 +85,23 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   joinGame: (gameId, player) => {
+    const game = get().getGameById(gameId);
+    if (!game || game.status !== 'recruiting') return '';
+    if (game.players.length >= game.totalPlayers) return '';
+
     const newPlayerId = `p${Date.now()}`;
     set((state) => {
-      const games = state.games.map((game) => {
-        if (game.id !== gameId) return game;
+      const games = state.games.map((g) => {
+        if (g.id !== gameId) return g;
         const newPlayer: Player = {
           ...player,
           id: newPlayerId,
         };
-        const newPlayers = [...game.players, newPlayer];
-        const isFull = newPlayers.length >= game.totalPlayers;
-        const newStatus: GameStatus = isFull ? 'full' : game.status;
+        const newPlayers = [...g.players, newPlayer];
+        const isFull = newPlayers.length >= g.totalPlayers;
+        const newStatus: GameStatus = isFull ? 'full' : g.status;
         return {
-          ...game,
+          ...g,
           players: newPlayers,
           status: newStatus,
         };
@@ -197,14 +201,20 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   submitVote: (gameId, playerId, optionId) => {
+    const game = get().getGameById(gameId);
+    if (!game || !game.voteData) return;
+    const isPlayer = game.players.some((p) => p.id === playerId);
+    if (!isPlayer) return;
+    if (game.voteData.votes[playerId]) return;
+
     set((state) => ({
-      games: state.games.map((game) => {
-        if (game.id !== gameId || !game.voteData) return game;
-        const newVotes = { ...game.voteData.votes, [playerId]: optionId };
-        const allVoted = game.players.every((p) => newVotes[p.id]);
+      games: state.games.map((g) => {
+        if (g.id !== gameId || !g.voteData) return g;
+        const newVotes = { ...g.voteData.votes, [playerId]: optionId };
+        const allVoted = g.players.every((p) => newVotes[p.id]);
 
         let finalAssignments: Record<string, string> | undefined;
-        let newStatus: GameStatus = game.status;
+        let newStatus: GameStatus = g.status;
 
         if (allVoted) {
           const voteCounts: Record<string, number> = {};
@@ -213,7 +223,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           });
           const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
           const winningOptionId = sorted[0][0];
-          const winningOption = game.voteData.options.find(
+          const winningOption = g.voteData.options.find(
             (o) => o.id === winningOptionId
           );
           if (winningOption) {
@@ -223,11 +233,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
 
         return {
-          ...game,
+          ...g,
           status: newStatus,
           finalAssignments,
           voteData: {
-            ...game.voteData,
+            ...g.voteData,
             votes: newVotes,
             status: allVoted ? 'ended' : 'active',
           },

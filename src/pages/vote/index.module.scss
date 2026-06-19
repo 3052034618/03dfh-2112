@@ -97,6 +97,11 @@
     background: $color-primary-bg;
   }
 
+  &.disabledCard {
+    opacity: 0.8;
+    cursor: default;
+  }
+
   &:active {
     transform: scale(0.98);
   }

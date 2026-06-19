@@ -18,6 +18,7 @@ const VotePage: React.FC = () => {
 
   const game = getGameById(gameId);
   const voteData = game?.voteData;
+  const isPlayer = game?.players.some((p) => p.id === currentUserId);
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -30,24 +31,24 @@ const VotePage: React.FC = () => {
   }, [voteData, currentUserId]);
 
   const voteStats = useMemo(() => {
-    if (!voteData) return {};
+    if (!voteData || !game) return {};
 
     const stats: Record<string, { count: number; percentage: number }> = {};
-    const totalVotes = Object.keys(voteData.votes).length;
+    const totalPlayers = game.players.length;
 
     voteData.options.forEach((opt) => {
       const count = Object.values(voteData.votes).filter((v) => v === opt.id).length;
       stats[opt.id] = {
         count,
-        percentage: totalVotes > 0 ? (count / totalVotes) * 100 : 0,
+        percentage: totalPlayers > 0 ? (count / totalPlayers) * 100 : 0,
       };
     });
 
     return stats;
-  }, [voteData]);
+  }, [voteData, game]);
 
   const handleVote = () => {
-    if (!selectedOption || !gameId || hasVoted) return;
+    if (!selectedOption || !gameId || hasVoted || !isPlayer) return;
 
     submitVote(gameId, currentUserId, selectedOption);
     setHasVoted(true);
@@ -76,7 +77,7 @@ const VotePage: React.FC = () => {
     );
   }
 
-  const totalVotes = Object.keys(voteData.votes).length;
+  const totalVotes = game.players.filter((p) => voteData.votes[p.id]).length;
   const totalPlayers = game.players.length;
   const allVoted = totalVotes >= totalPlayers;
   const progress = (totalVotes / totalPlayers) * 100;
@@ -138,8 +139,12 @@ const VotePage: React.FC = () => {
           return (
             <View
               key={option.id}
-              className={classNames(styles.voteCard, selectedOption === option.id && styles.selected)}
-              onClick={() => !hasVoted && setSelectedOption(option.id)}
+              className={classNames(
+                styles.voteCard,
+                selectedOption === option.id && styles.selected,
+                (!isPlayer || hasVoted) && styles.disabledCard
+              )}
+              onClick={() => isPlayer && !hasVoted && setSelectedOption(option.id)}
             >
               <View className={styles.voteCardHeader}>
                 <Text className={styles.optionTitle}>{option.title}</Text>
@@ -193,6 +198,10 @@ const VotePage: React.FC = () => {
         {allVoted ? (
           <View className={styles.primaryBtn} onClick={handleViewResult}>
             查看最终结果
+          </View>
+        ) : !isPlayer ? (
+          <View className={styles.secondaryBtn}>
+            非本场玩家，仅可查看
           </View>
         ) : hasVoted ? (
           <View className={styles.secondaryBtn}>

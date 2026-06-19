@@ -1,6 +1,6 @@
 export type Gender = 'male' | 'female' | 'neutral';
 
-export type GameStatus = 'recruiting' | 'full' | 'voting' | 'confirmed';
+export type GameStatus = 'recruiting' | 'full' | 'voting' | 'confirmed' | 'preparing';
 
 export type ComfortLevel = 'yes' | 'maybe' | 'no';
 
@@ -31,6 +31,7 @@ export interface Player {
   comfortZone?: ComfortZone;
   assignedRole?: string;
   candidateRoles?: string[];
+  confirmedRole?: boolean;
 }
 
 export interface VoteOption {

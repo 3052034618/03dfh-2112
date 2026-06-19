@@ -24,6 +24,7 @@ export const getGameStatusText = (status: Game['status']): string => {
     full: '已满员',
     voting: '投票中',
     confirmed: '已确认',
+    preparing: '准备开车',
   };
   return map[status];
 };
@@ -34,6 +35,7 @@ export const getGameStatusColor = (status: Game['status']): string => {
     full: '#f59e0b',
     voting: '#7c3aed',
     confirmed: '#3b82f6',
+    preparing: '#10b981',
   };
   return map[status];
 };

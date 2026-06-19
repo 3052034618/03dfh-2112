@@ -13,8 +13,16 @@ const RoleResultPage: React.FC = () => {
   const getGameById = useGameStore((state) => state.getGameById);
   const getRoleById = useGameStore((state) => state.getRoleById);
   const currentUserId = useGameStore((state) => state.currentUserId);
+  const confirmPlayerRole = useGameStore((state) => state.confirmPlayerRole);
+  const restartVote = useGameStore((state) => state.restartVote);
+  const removePlayer = useGameStore((state) => state.removePlayer);
+  const leaveGame = useGameStore((state) => state.leaveGame);
 
   const game = getGameById(gameId);
+  const player = game?.players.find((p) => p.id === currentUserId);
+  const isHost = game?.hostId === currentUserId;
+  const isPlayer = !!player;
+  const hasConfirmed = !!player?.confirmedRole;
 
   const myAssignment = useMemo(() => {
     if (!game || !game.finalAssignments) return null;
@@ -27,13 +35,14 @@ const RoleResultPage: React.FC = () => {
     if (!game || !game.finalAssignments) return [];
 
     return Object.entries(game.finalAssignments).map(([playerId, roleId]) => {
-      const player = game.players.find((p) => p.id === playerId);
+      const playerItem = game.players.find((p) => p.id === playerId);
       const role = getRoleById(gameId, roleId);
       return {
         playerId,
-        playerName: player?.nickname || '未知玩家',
-        isHost: player?.isHost || false,
-        playerGender: player?.gender || 'neutral',
+        playerName: playerItem?.nickname || '未知玩家',
+        isHost: playerItem?.isHost || false,
+        playerGender: playerItem?.gender || 'neutral',
+        confirmed: playerItem?.confirmedRole || false,
         roleId,
         roleName: role?.name || '未知角色',
         roleGender: role?.gender || 'neutral',
@@ -43,36 +52,36 @@ const RoleResultPage: React.FC = () => {
 
   const isCrossDress = useMemo(() => {
     if (!myAssignment || !game) return false;
-    const player = game.players.find((p) => p.id === currentUserId);
-    if (!player) return false;
-    return myAssignment.gender !== 'neutral' && player.gender !== myAssignment.gender;
+    const p = game.players.find((pl) => pl.id === currentUserId);
+    if (!p) return false;
+    return myAssignment.gender !== 'neutral' && p.gender !== myAssignment.gender;
   }, [myAssignment, game, currentUserId]);
 
   const comfortHitInfo = useMemo(() => {
     if (!myAssignment || !game) return null;
-    const player = game.players.find((p) => p.id === currentUserId);
-    if (!player || !player.comfortZone) return null;
+    const p = game.players.find((pl) => pl.id === currentUserId);
+    if (!p || !p.comfortZone) return null;
 
     const info = {
       crossDress: {
         needed: isCrossDress,
         level: isCrossDress
-          ? (player.gender === 'male'
-              ? player.comfortZone.crossDressMaleToFemale
-              : player.comfortZone.crossDressFemaleToMale)
+          ? (p.gender === 'male'
+              ? p.comfortZone.crossDressMaleToFemale
+              : p.comfortZone.crossDressFemaleToMale)
           : null,
       },
       intimate: {
         needed: myAssignment.hasIntimateScene || false,
-        level: myAssignment.hasIntimateScene ? player.comfortZone.intimateScene : null,
+        level: myAssignment.hasIntimateScene ? p.comfortZone.intimateScene : null,
       },
       killer: {
         needed: myAssignment.isKiller || false,
-        avoided: player.comfortZone.avoidKiller,
+        avoided: p.comfortZone.avoidKiller,
       },
       highlight: {
         needed: myAssignment.isHighlight || false,
-        preferred: player.comfortZone.preferHighlight,
+        preferred: p.comfortZone.preferHighlight,
       },
     };
 
@@ -130,6 +139,97 @@ const RoleResultPage: React.FC = () => {
     neutral: '#6b7280',
   };
 
+  const confirmProgress = useMemo(() => {
+    if (!game) return { confirmed: 0, total: 0, percentage: 0 };
+    const confirmed = game.players.filter((p) => p.confirmedRole).length;
+    const total = game.players.length;
+    return {
+      confirmed,
+      total,
+      percentage: total > 0 ? (confirmed / total) * 100 : 0,
+    };
+  }, [game]);
+
+  const handleConfirm = () => {
+    if (!gameId || !isPlayer || hasConfirmed) return;
+    confirmPlayerRole(gameId, currentUserId);
+    Taro.showToast({
+      title: '已确认',
+      icon: 'success',
+      duration: 1500,
+    });
+  };
+
+  const handleRestartVote = () => {
+    if (!gameId || !isHost) return;
+    Taro.showModal({
+      title: '重新分配角色',
+      content: '确定要重新发起角色分配投票吗？当前分配结果将作废。',
+      confirmText: '重新分配',
+      success: (res) => {
+        if (res.confirm) {
+          restartVote(gameId, currentUserId);
+          Taro.showToast({
+            title: '已重置',
+            icon: 'success',
+            duration: 1000,
+          });
+          setTimeout(() => {
+            Taro.redirectTo({
+              url: `/pages/role-plaza/index?gameId=${gameId}`,
+            });
+          }, 1000);
+        }
+      },
+    });
+  };
+
+  const handleRemovePlayer = (playerId: string, playerName: string) => {
+    if (!gameId || !isHost) return;
+    Taro.showModal({
+      title: '移出玩家',
+      content: `确定要将「${playerName}」移出车局吗？角色分配将重置。`,
+      confirmText: '移出',
+      confirmColor: '#ef4444',
+      success: (res) => {
+        if (res.confirm) {
+          removePlayer(gameId, currentUserId, playerId);
+          Taro.showToast({
+            title: '已移出',
+            icon: 'success',
+            duration: 1000,
+          });
+          setTimeout(() => {
+            Taro.navigateBack();
+          }, 1000);
+        }
+      },
+    });
+  };
+
+  const handleLeave = () => {
+    if (!gameId || !isPlayer || isHost) return;
+    Taro.showModal({
+      title: '退出车局',
+      content: '确定要退出这个车局吗？角色分配将重置。',
+      confirmText: '退出',
+      confirmColor: '#ef4444',
+      success: (res) => {
+        if (res.confirm) {
+          leaveGame(gameId, currentUserId);
+          Taro.showToast({
+            title: '已退出',
+            icon: 'success',
+            duration: 1000,
+          });
+          setTimeout(() => {
+            Taro.switchTab({ url: '/pages/hall/index' });
+          }, 1000);
+        }
+      },
+    });
+  };
+
   const handleBack = () => {
     Taro.navigateBack();
   };
@@ -151,12 +251,20 @@ const RoleResultPage: React.FC = () => {
     );
   }
 
+  const isPreparing = game.status === 'preparing';
+
   return (
     <ScrollView scrollY className={styles.page}>
       <View className={styles.header}>
-        <Text className={styles.successIcon}>🎉</Text>
-        <Text className={styles.title}>角色分配已确认</Text>
-        <Text className={styles.subtitle}>大家都已确认，准备好开始你的剧本之旅吧！</Text>
+        <Text className={styles.successIcon}>{isPreparing ? '🚗' : '🎉'}</Text>
+        <Text className={styles.title}>
+          {isPreparing ? '准备开车' : '角色分配已确认'}
+        </Text>
+        <Text className={styles.subtitle}>
+          {isPreparing
+            ? '全员已确认角色，准时到店即可发车！'
+            : '角色分配结果已出，确认你的角色准备发车'}
+        </Text>
       </View>
 
       <View className={styles.resultCard}>
@@ -269,7 +377,9 @@ const RoleResultPage: React.FC = () => {
                     <Text
                       className={classNames(
                         styles.comfortHitValue,
-                        comfortHitInfo.highlight.preferred ? styles.levelyes : styles.levelneutral
+                        comfortHitInfo.highlight.preferred
+                          ? styles.levelyes
+                          : styles.levelneutral
                       )}
                     >
                       {comfortHitInfo.highlight.preferred ? '✅ 刚好你想要' : '📋 分配到了'}
@@ -288,6 +398,70 @@ const RoleResultPage: React.FC = () => {
               </View>
             </View>
           )}
+        </View>
+
+        <View className={styles.confirmSection}>
+          <View className={styles.confirmHeader}>
+            <Text className={styles.sectionTitle}>
+              <Text className={styles.sectionIcon}>✅</Text>
+              开车前确认清单
+            </Text>
+            <Text className={styles.confirmProgress}>
+              {confirmProgress.confirmed}/{confirmProgress.total}
+            </Text>
+          </View>
+
+          <View className={styles.confirmProgressBar}>
+            <View
+              className={styles.confirmProgressFill}
+              style={{ width: `${confirmProgress.percentage}%` }}
+            />
+          </View>
+
+          <View className={styles.confirmList}>
+            {allAssignments.map((item) => (
+              <View
+                key={item.playerId}
+                className={classNames(
+                  styles.confirmItem,
+                  isHost && !item.isHost && styles.confirmItemClickable
+                )}
+                onClick={() => {
+                  if (isHost && !item.isHost) {
+                    handleRemovePlayer(item.playerId, item.playerName);
+                  }
+                }}
+              >
+                <View className={styles.confirmAvatar}>
+                  {item.playerGender === 'male' ? '👨' : '👩'}
+                </View>
+                <View className={styles.confirmInfo}>
+                  <View className={styles.confirmNameRow}>
+                    <Text className={styles.confirmName}>
+                      {item.playerName}
+                      {item.isHost && (
+                        <Text className={styles.hostBadge}>发起人</Text>
+                      )}
+                      {item.playerId === currentUserId && (
+                        <Text className={styles.selfBadge}>你</Text>
+                      )}
+                    </Text>
+                    <Text className={styles.confirmRole}>{item.roleName}</Text>
+                  </View>
+                </View>
+                <View className={styles.confirmStatus}>
+                  {item.confirmed ? (
+                    <Text className={styles.confirmedText}>✓ 已确认</Text>
+                  ) : (
+                    <Text className={styles.unconfirmedText}>待确认</Text>
+                  )}
+                </View>
+                {isHost && !item.isHost && (
+                  <Text className={styles.removeHint}>移出</Text>
+                )}
+              </View>
+            ))}
+          </View>
         </View>
 
         <Text className={styles.sectionTitle}>
@@ -365,12 +539,29 @@ const RoleResultPage: React.FC = () => {
       </View>
 
       <View className={styles.bottomBar}>
-        <View className={styles.secondaryBtn} onClick={handleBack}>
-          返回详情
-        </View>
-        <View className={styles.primaryBtn} onClick={handleBackToHall}>
-          回到大厅
-        </View>
+        {isHost && (
+          <View className={styles.secondaryBtn} onClick={handleRestartVote}>
+            重新分配
+          </View>
+        )}
+        {isPlayer && !isHost && !hasConfirmed && (
+          <View className={styles.secondaryBtn} onClick={handleLeave}>
+            退出车局
+          </View>
+        )}
+        {isPlayer && !hasConfirmed ? (
+          <View className={styles.primaryBtn} onClick={handleConfirm}>
+            我已确认角色
+          </View>
+        ) : !isPlayer ? (
+          <View className={styles.secondaryBtn} onClick={handleBack}>
+            返回详情
+          </View>
+        ) : (
+          <View className={styles.primaryBtn} onClick={handleBackToHall}>
+            回到大厅
+          </View>
+        )}
       </View>
     </ScrollView>
   );

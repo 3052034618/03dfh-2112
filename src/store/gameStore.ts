@@ -10,10 +10,14 @@ interface GameState {
   setCurrentGame: (game: Game | null) => void;
   getGameById: (id: string) => Game | undefined;
   joinGame: (gameId: string, player: Omit<Player, 'id'>) => string;
+  leaveGame: (gameId: string, playerId: string) => void;
   updateComfortZone: (gameId: string, playerId: string, comfortZone: ComfortZone) => void;
   submitVote: (gameId: string, playerId: string, optionId: string) => void;
   resolveTie: (gameId: string, hostId: string, optionId: string) => void;
   endVoteByDeadline: (gameId: string) => void;
+  confirmPlayerRole: (gameId: string, playerId: string) => void;
+  restartVote: (gameId: string, hostId: string) => void;
+  removePlayer: (gameId: string, hostId: string, playerId: string) => void;
   createGame: (game: Omit<Game, 'id' | 'players' | 'status' | 'hostId'> & { host: Omit<Player, 'id' | 'isHost'> }) => string;
   getRoleById: (gameId: string, roleId: string) => RoleInfo | undefined;
   getPlayerById: (gameId: string, playerId: string) => Player | undefined;
@@ -296,13 +300,32 @@ export const useGameStore = create<GameState>((set, get) => ({
           .filter((p) => g.voteData!.votes[p.id])
           .map((p) => g.voteData!.votes[p.id]);
 
-        if (validVotes.length === 0) return g;
+        if (validVotes.length === 0) {
+          return {
+            ...g,
+            voteData: {
+              ...g.voteData,
+              status: 'ended' as const,
+            },
+          };
+        }
 
         const voteCounts: Record<string, number> = {};
         validVotes.forEach((optId) => {
           voteCounts[optId] = (voteCounts[optId] || 0) + 1;
         });
         const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+
+        if (sorted.length >= 2 && sorted[0][1] === sorted[1][1]) {
+          return {
+            ...g,
+            voteData: {
+              ...g.voteData,
+              status: 'tie' as const,
+            },
+          };
+        }
+
         const winningOptionId = sorted[0][0];
         const winningOption = g.voteData.options.find(
           (o) => o.id === winningOptionId
@@ -315,8 +338,130 @@ export const useGameStore = create<GameState>((set, get) => ({
           finalAssignments: { ...winningOption.roleAssignments },
           voteData: {
             ...g.voteData,
-            status: 'ended',
+            status: 'ended' as const,
           },
+        };
+      }),
+    }));
+  },
+
+  confirmPlayerRole: (gameId, playerId) => {
+    const game = get().getGameById(gameId);
+    if (!game) return;
+    if (game.status !== 'confirmed' && game.status !== 'preparing') return;
+    const isPlayer = game.players.some((p) => p.id === playerId);
+    if (!isPlayer) return;
+
+    set((state) => ({
+      games: state.games.map((g) => {
+        if (g.id !== gameId) return g;
+
+        const newPlayers = g.players.map((p) =>
+          p.id === playerId ? { ...p, confirmedRole: true } : p
+        );
+        const allConfirmed = newPlayers.every((p) => p.confirmedRole);
+        const newStatus: GameStatus = allConfirmed ? 'preparing' : g.status;
+
+        return {
+          ...g,
+          players: newPlayers,
+          status: newStatus,
+        };
+      }),
+    }));
+  },
+
+  restartVote: (gameId, hostId) => {
+    const game = get().getGameById(gameId);
+    if (!game) return;
+    if (game.hostId !== hostId) return;
+
+    set((state) => ({
+      games: state.games.map((g) => {
+        if (g.id !== gameId) return g;
+
+        const newPlayers = g.players.map((p) => ({
+          ...p,
+          confirmedRole: false,
+        }));
+
+        return {
+          ...g,
+          status: 'full',
+          players: newPlayers,
+          voteData: undefined,
+          finalAssignments: undefined,
+        };
+      }),
+    }));
+  },
+
+  removePlayer: (gameId, hostId, playerId) => {
+    const game = get().getGameById(gameId);
+    if (!game) return;
+    if (game.hostId !== hostId) return;
+    if (game.players.find((p) => p.id === playerId)?.isHost) return;
+
+    set((state) => ({
+      games: state.games.map((g) => {
+        if (g.id !== gameId) return g;
+
+        const newPlayers = g.players.filter((p) => p.id !== playerId);
+        let newStatus: GameStatus = g.status;
+
+        if (g.status === 'confirmed' || g.status === 'preparing' || g.status === 'voting') {
+          newStatus = 'full';
+        } else if (g.status === 'full' && newPlayers.length < g.totalPlayers) {
+          newStatus = 'recruiting';
+        }
+
+        return {
+          ...g,
+          status: newStatus,
+          players: newPlayers,
+          voteData:
+            g.status === 'confirmed' || g.status === 'preparing' || g.status === 'voting'
+              ? undefined
+              : g.voteData,
+          finalAssignments:
+            g.status === 'confirmed' || g.status === 'preparing'
+              ? undefined
+              : g.finalAssignments,
+        };
+      }),
+    }));
+  },
+
+  leaveGame: (gameId, playerId) => {
+    const game = get().getGameById(gameId);
+    if (!game) return;
+    if (game.players.find((p) => p.id === playerId)?.isHost) return;
+
+    set((state) => ({
+      games: state.games.map((g) => {
+        if (g.id !== gameId) return g;
+
+        const newPlayers = g.players.filter((p) => p.id !== playerId);
+        let newStatus: GameStatus = g.status;
+
+        if (g.status === 'confirmed' || g.status === 'preparing' || g.status === 'voting') {
+          newStatus = 'full';
+        } else if (g.status === 'full' && newPlayers.length < g.totalPlayers) {
+          newStatus = 'recruiting';
+        }
+
+        return {
+          ...g,
+          status: newStatus,
+          players: newPlayers,
+          voteData:
+            g.status === 'confirmed' || g.status === 'preparing' || g.status === 'voting'
+              ? undefined
+              : g.voteData,
+          finalAssignments:
+            g.status === 'confirmed' || g.status === 'preparing'
+              ? undefined
+              : g.finalAssignments,
         };
       }),
     }));

@@ -46,7 +46,7 @@ export interface VoteData {
   options: VoteOption[];
   votes: Record<string, string>;
   deadline: number;
-  status: 'active' | 'ended';
+  status: 'active' | 'ended' | 'tie';
 }
 
 export interface Game {

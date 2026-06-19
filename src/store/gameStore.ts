@@ -12,6 +12,8 @@ interface GameState {
   joinGame: (gameId: string, player: Omit<Player, 'id'>) => string;
   updateComfortZone: (gameId: string, playerId: string, comfortZone: ComfortZone) => void;
   submitVote: (gameId: string, playerId: string, optionId: string) => void;
+  resolveTie: (gameId: string, hostId: string, optionId: string) => void;
+  endVoteByDeadline: (gameId: string) => void;
   createGame: (game: Omit<Game, 'id' | 'players' | 'status' | 'hostId'> & { host: Omit<Player, 'id' | 'isHost'> }) => string;
   getRoleById: (gameId: string, roleId: string) => RoleInfo | undefined;
   getPlayerById: (gameId: string, playerId: string) => Player | undefined;
@@ -206,6 +208,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const isPlayer = game.players.some((p) => p.id === playerId);
     if (!isPlayer) return;
     if (game.voteData.votes[playerId]) return;
+    if (game.voteData.status === 'tie' || game.voteData.status === 'ended') return;
 
     set((state) => ({
       games: state.games.map((g) => {
@@ -215,6 +218,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         let finalAssignments: Record<string, string> | undefined;
         let newStatus: GameStatus = g.status;
+        let voteStatus: 'active' | 'ended' | 'tie' = g.voteData.status;
 
         if (allVoted) {
           const voteCounts: Record<string, number> = {};
@@ -222,13 +226,19 @@ export const useGameStore = create<GameState>((set, get) => ({
             voteCounts[optId] = (voteCounts[optId] || 0) + 1;
           });
           const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-          const winningOptionId = sorted[0][0];
-          const winningOption = g.voteData.options.find(
-            (o) => o.id === winningOptionId
-          );
-          if (winningOption) {
-            finalAssignments = { ...winningOption.roleAssignments };
-            newStatus = 'confirmed';
+
+          if (sorted.length >= 2 && sorted[0][1] === sorted[1][1]) {
+            voteStatus = 'tie';
+          } else {
+            const winningOptionId = sorted[0][0];
+            const winningOption = g.voteData.options.find(
+              (o) => o.id === winningOptionId
+            );
+            if (winningOption) {
+              finalAssignments = { ...winningOption.roleAssignments };
+              newStatus = 'confirmed';
+              voteStatus = 'ended';
+            }
           }
         }
 
@@ -239,7 +249,73 @@ export const useGameStore = create<GameState>((set, get) => ({
           voteData: {
             ...g.voteData,
             votes: newVotes,
-            status: allVoted ? 'ended' : 'active',
+            status: voteStatus,
+          },
+        };
+      }),
+    }));
+  },
+
+  resolveTie: (gameId, hostId, optionId) => {
+    const game = get().getGameById(gameId);
+    if (!game || !game.voteData) return;
+    if (game.hostId !== hostId) return;
+    if (game.voteData.status !== 'tie') return;
+
+    set((state) => ({
+      games: state.games.map((g) => {
+        if (g.id !== gameId || !g.voteData) return g;
+        const winningOption = g.voteData.options.find(
+          (o) => o.id === optionId
+        );
+        if (!winningOption) return g;
+
+        return {
+          ...g,
+          status: 'confirmed',
+          finalAssignments: { ...winningOption.roleAssignments },
+          voteData: {
+            ...g.voteData,
+            status: 'ended',
+          },
+        };
+      }),
+    }));
+  },
+
+  endVoteByDeadline: (gameId) => {
+    const game = get().getGameById(gameId);
+    if (!game || !game.voteData) return;
+    if (game.voteData.status !== 'active') return;
+
+    set((state) => ({
+      games: state.games.map((g) => {
+        if (g.id !== gameId || !g.voteData) return g;
+
+        const validVotes = g.players
+          .filter((p) => g.voteData!.votes[p.id])
+          .map((p) => g.voteData!.votes[p.id]);
+
+        if (validVotes.length === 0) return g;
+
+        const voteCounts: Record<string, number> = {};
+        validVotes.forEach((optId) => {
+          voteCounts[optId] = (voteCounts[optId] || 0) + 1;
+        });
+        const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+        const winningOptionId = sorted[0][0];
+        const winningOption = g.voteData.options.find(
+          (o) => o.id === winningOptionId
+        );
+        if (!winningOption) return g;
+
+        return {
+          ...g,
+          status: 'confirmed',
+          finalAssignments: { ...winningOption.roleAssignments },
+          voteData: {
+            ...g.voteData,
+            status: 'ended',
           },
         };
       }),

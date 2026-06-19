@@ -3,7 +3,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import classNames from 'classnames';
 import { useGameStore } from '@/store/gameStore';
-import { ComfortZone, ComfortLevel, Gender } from '@/types/game';
+import { ComfortZone, ComfortLevel } from '@/types/game';
 import styles from './index.module.scss';
 
 const ComfortZonePage: React.FC = () => {

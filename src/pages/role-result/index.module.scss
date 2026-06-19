@@ -88,6 +88,97 @@
   line-height: 1.6;
 }
 
+.myRoleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.hitStatus {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.myRoleDescBox {
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  text-align: left;
+}
+
+.myRoleDescTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.comfortHitSection {
+  margin-top: $spacing-lg;
+  padding-top: $spacing-lg;
+  border-top: 1px solid $color-divider;
+  text-align: left;
+}
+
+.comfortHitTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.comfortHitList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.comfortHitItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+}
+
+.comfortHitLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.comfortHitValue {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.levelyes {
+  color: $color-success;
+}
+
+.levelmaybe {
+  color: $color-warning;
+}
+
+.levelno {
+  color: $color-error;
+}
+
+.levelneutral {
+  color: $color-text-secondary;
+}
+
+.selfBadge {
+  font-size: 20rpx;
+  color: $color-primary;
+  background: rgba(59, 130, 246, 0.15);
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+  margin-left: 8rpx;
+}
+
 .roleTags {
   display: flex;
   justify-content: center;

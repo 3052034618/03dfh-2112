@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro';
 import classNames from 'classnames';
 import { useGameStore } from '@/store/gameStore';
 import { VoteOption } from '@/types/game';
+import { formatDateTime } from '@/utils/gameUtils';
 import styles from './index.module.scss';
 
 const VotePage: React.FC = () => {
@@ -12,6 +13,8 @@ const VotePage: React.FC = () => {
 
   const getGameById = useGameStore((state) => state.getGameById);
   const submitVote = useGameStore((state) => state.submitVote);
+  const resolveTie = useGameStore((state) => state.resolveTie);
+  const endVoteByDeadline = useGameStore((state) => state.endVoteByDeadline);
   const currentUserId = useGameStore((state) => state.currentUserId);
   const getRoleById = useGameStore((state) => state.getRoleById);
   const getPlayerById = useGameStore((state) => state.getPlayerById);
@@ -19,9 +22,11 @@ const VotePage: React.FC = () => {
   const game = getGameById(gameId);
   const voteData = game?.voteData;
   const isPlayer = game?.players.some((p) => p.id === currentUserId);
+  const isHost = game?.hostId === currentUserId;
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
+  const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 
   useEffect(() => {
     if (voteData && voteData.votes[currentUserId]) {
@@ -29,6 +34,29 @@ const VotePage: React.FC = () => {
       setHasVoted(true);
     }
   }, [voteData, currentUserId]);
+
+  useEffect(() => {
+    if (game?.status === 'confirmed') {
+      Taro.redirectTo({
+        url: `/pages/role-result/index?gameId=${gameId}`,
+      });
+    }
+  }, [game?.status, gameId]);
+
+  useEffect(() => {
+    if (!voteData) return;
+
+    const checkDeadline = () => {
+      if (Date.now() > voteData.deadline && voteData.status === 'active') {
+        setIsDeadlinePassed(true);
+        endVoteByDeadline(gameId);
+      }
+    };
+
+    checkDeadline();
+    const timer = setInterval(checkDeadline, 10000);
+    return () => clearInterval(timer);
+  }, [voteData, gameId, endVoteByDeadline]);
 
   const voteStats = useMemo(() => {
     if (!voteData || !game) return {};
@@ -47,8 +75,10 @@ const VotePage: React.FC = () => {
     return stats;
   }, [voteData, game]);
 
+  const isTie = voteData?.status === 'tie';
+
   const handleVote = () => {
-    if (!selectedOption || !gameId || hasVoted || !isPlayer) return;
+    if (!selectedOption || !gameId || hasVoted || !isPlayer || isTie) return;
 
     submitVote(gameId, currentUserId, selectedOption);
     setHasVoted(true);
@@ -57,6 +87,20 @@ const VotePage: React.FC = () => {
       title: '投票成功',
       icon: 'success',
       duration: 1500,
+    });
+  };
+
+  const handleResolveTie = (optionId: string) => {
+    if (!isHost || !isTie) return;
+
+    Taro.showModal({
+      title: '确认最终方案',
+      content: '作为发起人，你将决定最终的角色分配方案，是否确认？',
+      success: (res) => {
+        if (res.confirm) {
+          resolveTie(gameId, currentUserId, optionId);
+        }
+      },
     });
   };
 
@@ -96,10 +140,11 @@ const VotePage: React.FC = () => {
   return (
     <ScrollView scrollY className={styles.page}>
       <View className={styles.header}>
-        <Text className={styles.title}>协商投票</Text>
+        <Text className={styles.title}>{isTie ? '平局，发起人裁定' : '协商投票'}</Text>
         <Text className={styles.subtitle}>
-          角色分配存在冲突，请选择你更倾向的方案{'\n'}
-          投票结束后将按多数人的选择确定角色
+          {isTie
+            ? '投票结果平局，请发起人选择最终角色分配方案'
+            : '角色分配存在冲突，请选择你更倾向的方案\n投票结束后将按多数人的选择确定角色'}
         </Text>
       </View>
 
@@ -114,27 +159,52 @@ const VotePage: React.FC = () => {
           <View className={styles.progressFill} style={{ width: `${progress}%` }} />
         </View>
         <Text className={styles.timeLeft}>
-          {allVoted ? '✅ 全员已投票' : `还剩 ${totalPlayers - totalVotes} 人未投票`}
+          {allVoted && !isTie
+            ? '✅ 全员已投票'
+            : isTie
+            ? '🤝 等待发起人裁定'
+            : isDeadlinePassed
+            ? '⏰ 投票已截止，按当前有效票结算'
+            : `还剩 ${totalPlayers - totalVotes} 人未投票 · 截止 ${formatDateTime(voteData.deadline)}`}
         </Text>
       </View>
 
-      <View className={styles.tipCard}>
-        <Text className={styles.tipTitle}>
-          <Text>💡</Text>
-          为什么需要投票？
-        </Text>
-        <Text className={styles.tipContent}>
-          根据大家填写的舒适区，系统生成了两种角色分配方案。{'\n'}
-          请选择你更倾向的方案，最终按多数票结果执行。
-        </Text>
-      </View>
+      {!isTie && (
+        <View className={styles.tipCard}>
+          <Text className={styles.tipTitle}>
+            <Text>💡</Text>
+            为什么需要投票？
+          </Text>
+          <Text className={styles.tipContent}>
+            根据大家填写的舒适区，系统生成了两种角色分配方案。{'\n'}
+            请选择你更倾向的方案，最终按多数票结果执行。
+          </Text>
+        </View>
+      )}
+
+      {isTie && (
+        <View className={styles.tieCard}>
+          <Text className={styles.tieTitle}>
+            <Text>🤝</Text>
+            投票结果平局
+          </Text>
+          <Text className={styles.tieContent}>
+            {isHost
+              ? '作为发起人，请你在下方选择最终的角色分配方案'
+              : '发起人正在裁定最终方案，请稍候...'}
+          </Text>
+        </View>
+      )}
 
       <View className={styles.voteSection}>
-        <Text className={styles.sectionTitle}>投票选项</Text>
+        <Text className={styles.sectionTitle}>
+          {isTie && isHost ? '发起人选择最终方案' : '投票选项'}
+        </Text>
 
         {voteData.options.map((option) => {
           const stats = voteStats[option.id] || { count: 0, percentage: 0 };
           const assignments = getRoleAssignmentsDisplay(option);
+          const canSelect = !isTie ? isPlayer && !hasVoted : isHost && isTie;
 
           return (
             <View
@@ -142,9 +212,16 @@ const VotePage: React.FC = () => {
               className={classNames(
                 styles.voteCard,
                 selectedOption === option.id && styles.selected,
-                (!isPlayer || hasVoted) && styles.disabledCard
+                (!canSelect) && styles.disabledCard
               )}
-              onClick={() => isPlayer && !hasVoted && setSelectedOption(option.id)}
+              onClick={() => {
+                if (!canSelect) return;
+                if (isTie && isHost) {
+                  handleResolveTie(option.id);
+                } else {
+                  setSelectedOption(option.id);
+                }
+              }}
             >
               <View className={styles.voteCardHeader}>
                 <Text className={styles.optionTitle}>{option.title}</Text>
@@ -154,7 +231,13 @@ const VotePage: React.FC = () => {
                     selectedOption === option.id && styles.selected
                   )}
                 >
-                  {selectedOption === option.id ? '已选择' : '点击选择'}
+                  {isTie && isHost
+                    ? '点击确定此方案'
+                    : selectedOption === option.id
+                    ? '已选择'
+                    : hasVoted || !isPlayer
+                    ? '不可选择'
+                    : '点击选择'}
                 </View>
               </View>
 
@@ -195,13 +278,21 @@ const VotePage: React.FC = () => {
       </View>
 
       <View className={styles.bottomBar}>
-        {allVoted ? (
+        {allVoted && !isTie ? (
           <View className={styles.primaryBtn} onClick={handleViewResult}>
             查看最终结果
           </View>
         ) : !isPlayer ? (
           <View className={styles.secondaryBtn}>
             非本场玩家，仅可查看
+          </View>
+        ) : isTie && !isHost ? (
+          <View className={styles.secondaryBtn}>
+            等待发起人裁定...
+          </View>
+        ) : isTie && isHost ? (
+          <View className={styles.secondaryBtn}>
+            请在上方点击选择最终方案
           </View>
         ) : hasVoted ? (
           <View className={styles.secondaryBtn}>
